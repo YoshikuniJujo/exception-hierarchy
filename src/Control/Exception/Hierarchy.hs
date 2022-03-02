@@ -35,22 +35,25 @@ myNotStrict = bang noSourceUnpackedness noSourceStrictness
 
 exceptionContainer :: Name -> DecsQ
 exceptionContainer ec = sequence [
-	dataD (cxt []) he [] Nothing
-		[forallC [PlainTV e] (cxt [myClassP ''Exception [varT e]]) $
-			normalC he [bangType myNotStrict (varT e)]]
-		[derivClause Nothing [conT ''Typeable]],
+	do	tv <- plainInvisTV e specifiedSpec
+		dataD (cxt []) he [] Nothing
+			[forallC [tv] (cxt [myClassP ''Exception [varT e]]) $
+				normalC he [bangType myNotStrict (varT e)]]
+			[derivClause Nothing [conT ''Typeable]],
 	instanceD (cxt []) (conT ''Show `appT` conT he)
 		[funD 'showsPrec
 			[clause [varP d, conP he [varP e]]
 				(normalB $ varE 'showsPrec `appE` varE d `appE` varE e) []]],
-	sigD toEx . forallT [PlainTV e] (cxt [myClassP ''Exception [varT e]]) $
-		varT e `arrT` conT ''SomeException,
+	do	tv <- plainInvisTV e specifiedSpec
+		sigD toEx . forallT [tv] (cxt [myClassP ''Exception [varT e]]) $
+			varT e `arrT` conT ''SomeException,
 	valD (varP toEx)
 		(normalB $ infixE
 			(Just $ varE 'toException) (varE '(.)) (Just $ conE he))
 		[],
-	sigD fromEx . forallT [PlainTV e] (cxt [myClassP ''Exception [varT e]]) $
-		conT ''SomeException `arrT` (conT ''Maybe `appT` varT e),
+	do	tv <- plainInvisTV e specifiedSpec
+		sigD fromEx . forallT [tv] (cxt [myClassP ''Exception [varT e]]) $
+			conT ''SomeException `arrT` (conT ''Maybe `appT` varT e),
 	funD fromEx [clause
 		[varP se]
 		(normalB $ doE [
