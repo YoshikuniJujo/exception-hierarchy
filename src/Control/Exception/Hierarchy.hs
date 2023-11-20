@@ -86,8 +86,9 @@ instException ec e = instanceD (cxt [])
 		valD (varP $ mkName "fromException") (normalB $ varE fe) [] ]
 	where
 	ec' = toLowerH $ nameBase ec
-	te = mkName $ ec' ++ "ToException"
-	fe = mkName $ ec' ++ "FromException"
+	ec'' = maybe ec' (++ ('.' : ec')) $ nameModule ec
+	te = mkName $ ec'' ++ "ToException"
+	fe = mkName $ ec'' ++ "FromException"
 
 toLowerH :: String -> String
 toLowerH (c : cs) = toLower c : cs
