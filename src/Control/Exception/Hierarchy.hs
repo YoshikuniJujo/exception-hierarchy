@@ -65,8 +65,9 @@ exceptionContainer ec = sequence [
 	where
 	he = ec
 	ec' = toLowerH $ nameBase ec
-	toEx = mkName $ ec' ++ "ToException"
-	fromEx = mkName $ ec' ++ "FromException"
+	ec'' = maybe ec' (++ ('.' : ec')) $ nameModule ec
+	toEx = mkName $ ec'' ++ "ToException"
+	fromEx = mkName $ ec'' ++ "FromException"
 	e = mkName "e"
 	se = mkName "se"
 	d = mkName "d"
